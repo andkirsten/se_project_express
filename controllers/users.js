@@ -13,7 +13,6 @@ exports.createUser = function (req, res, next) {
   User.create({ name, avatar })
     .then((user) => {
       res.status(201).json(user);
-      console.log(user);
     })
     .catch(next);
 };

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+
 const validator = require("validator");
 
 const userSchema = new mongoose.Schema({
@@ -12,7 +13,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     validate: {
-      validator: (value) => {
+      validator: function validateURL(value) {
         return validator.isURL(value);
       },
       message: (props) => `${props.value} is not a valid URL`,
