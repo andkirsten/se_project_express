@@ -1,11 +1,20 @@
+const { mongo } = require("mongoose");
 const ClothingItem = require("../models/clothingItem");
+const {
+  VALIDATION_ERROR_CODE,
+  SERVER_ERROR_CODE,
+  CAST_ERROR_CODE,
+} = require("../utils/errors");
 
-exports.getClothingItems = function (req, res, next) {
+exports.getClothingItems = (req, res, next) => {
   ClothingItem.find({})
     .then((items) => {
       res.json(items);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === "ValidationError")
+        return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
+    });
 };
 
 exports.createClothingItem = (req, res, next) => {
@@ -14,7 +23,10 @@ exports.createClothingItem = (req, res, next) => {
     .then((item) => {
       res.status(201).json(item);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === "ValidationError")
+        return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
+    });
 };
 
 exports.deleteClothingItem = (req, res, next) => {
@@ -27,29 +39,54 @@ exports.deleteClothingItem = (req, res, next) => {
     .then((item) => {
       res.json(item);
     })
-    .catch(next);
+    .catch((err) => {
+      console.log("delete Item " + err.name);
+      if (err.name === "CastError")
+        return res.status(CAST_ERROR_CODE).json({ message: err.message });
+    });
 };
 
 exports.likeClothingItem = (req, res, next) => {
+  const itemId = req.params.itemId;
+  if (!mongoose.ObjectId.isValid(itemId)) {
+    const error = new Error("Item ID not found");
+    error.status = 404;
+    throw error;
+  }
+
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
-    { $addToSet: { likes: req.user._id } },
+    { $addToSet: { likes: req.user._id.toString() } },
     { new: true },
   )
     .then((item) => {
       res.json(item);
     })
-    .catch(next);
+    .catch((err) => {
+      console.log("like item " + err.name);
+      if (err.name === "ValidationError")
+        return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
+    });
 };
 
 exports.unlikeClothingItem = (req, res, next) => {
+  const itemId = req.params.itemId;
+  if (!mongoose.ObjectId.isValid(itemId)) {
+    const error = new Error("Item ID not found");
+    error.status = 404;
+    throw error;
+  }
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
-    { $pull: { likes: req.user._id } },
+    { $pull: { likes: req.user._id.toString() } },
     { new: true },
   )
     .then((item) => {
       res.json(item);
     })
-    .catch(next);
+    .catch((err) => {
+      console.log("unlike " + err.name);
+      if (err.name === "ValidationError")
+        return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
+    });
 };
