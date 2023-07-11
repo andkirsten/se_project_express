@@ -1,13 +1,14 @@
+const mongoose = require("mongoose");
+
 const User = require("../models/user");
 
 const {
   VALIDATION_ERROR_CODE,
   NOT_FOUND_ERROR_CODE,
+  SERVER_ERROR_CODE,
 } = require("../utils/errors");
 
-const mongoose = require("mongoose");
-
-exports.getUsers = function (req, res) {
+exports.getUsers = (req, res) => {
   User.find({})
     .then((users) => {
       res.json(users);
@@ -15,10 +16,13 @@ exports.getUsers = function (req, res) {
     .catch((err) => {
       if (err.name === "ValidationError")
         return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
+      return res
+        .status(SERVER_ERROR_CODE)
+        .json({ message: "Internal Server Error" });
     });
 };
 
-exports.createUser = function (req, res) {
+exports.createUser = (req, res) => {
   const { name, avatar } = req.body;
   User.create({ name, avatar })
     .then((user) => {
@@ -27,16 +31,19 @@ exports.createUser = function (req, res) {
     .catch((err) => {
       if (err.name === "ValidationError")
         return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
+      return res
+        .status(SERVER_ERROR_CODE)
+        .json({ message: "Internal Server Error" });
     });
 };
 
-exports.getUserById = function (req, res) {
-  const userId = req.params.userId;
-  if (!mongoose.isValidObjectId(userId)) {
+exports.getUserById = (req, res) => {
+  const { userId } = req.params;
+  if (!mongoose.isValidObjectId(userId))
     return res
       .status(VALIDATION_ERROR_CODE)
       .send({ message: "This User doesn't exist" });
-  } else {
+  else {
     User.findById(userId)
       .orFail()
       .then((user) => {
@@ -47,6 +54,9 @@ exports.getUserById = function (req, res) {
           return res
             .status(NOT_FOUND_ERROR_CODE)
             .json({ message: err.message });
+        return res
+          .status(SERVER_ERROR_CODE)
+          .json({ message: "Internal Server Error" });
       });
   }
 };

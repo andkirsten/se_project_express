@@ -5,6 +5,7 @@ const ClothingItem = require("../models/clothingItem");
 const {
   VALIDATION_ERROR_CODE,
   NOT_FOUND_ERROR_CODE,
+  SERVER_ERROR_CODE,
 } = require("../utils/errors");
 
 exports.getClothingItems = (req, res) => {
@@ -15,6 +16,9 @@ exports.getClothingItems = (req, res) => {
     .catch((err) => {
       if (err.name === "ValidationError")
         return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
+      return res
+        .status(SERVER_ERROR_CODE)
+        .json({ message: "Internal Server Error" });
     });
 };
 
@@ -27,6 +31,9 @@ exports.createClothingItem = (req, res) => {
     .catch((err) => {
       if (err.name === "ValidationError")
         return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
+      return res
+        .status(SERVER_ERROR_CODE)
+        .json({ message: "Internal Server Error" });
     });
 };
 
@@ -47,11 +54,14 @@ exports.deleteClothingItem = (req, res) => {
         return res.status(NOT_FOUND_ERROR_CODE).json({ message: err.message });
       if (err.name === "Error")
         return res.status(NOT_FOUND_ERROR_CODE).json({ message: err.message });
+      return res
+        .status(SERVER_ERROR_CODE)
+        .json({ message: "Internal Server Error" });
     });
 };
 
 exports.likeClothingItem = (req, res) => {
-  const itemId = req.params.itemId;
+  const { itemId } = req.params;
   if (!mongoose.isValidObjectId(itemId)) {
     return res
       .status(VALIDATION_ERROR_CODE)
@@ -76,11 +86,14 @@ exports.likeClothingItem = (req, res) => {
         return res
           .status(NOT_FOUND_ERROR_CODE)
           .json({ message: "document not found" });
+      return res
+        .status(SERVER_ERROR_CODE)
+        .json({ message: "Internal Server Error" });
     });
 };
 
 exports.unlikeClothingItem = (req, res) => {
-  const itemId = req.params.itemId;
+  const { itemId } = req.params;
   if (!mongoose.isValidObjectId(itemId)) {
     return res
       .status(VALIDATION_ERROR_CODE)
@@ -104,5 +117,8 @@ exports.unlikeClothingItem = (req, res) => {
         return res
           .status(NOT_FOUND_ERROR_CODE)
           .json({ message: "document not found" });
+      return res
+        .status(SERVER_ERROR_CODE)
+        .json({ message: "Internal Server Error" });
     });
 };
