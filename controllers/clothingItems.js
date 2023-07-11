@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const ClothingItem = require("../models/clothingItem");
 
 const {
@@ -10,20 +9,16 @@ const {
 
 exports.getClothingItems = (req, res) => {
   ClothingItem.find({})
-    .then((items) => {
-      res.json(items);
-    })
-    .catch((err) => {
-      return res.status(SERVER_ERROR_CODE).json({ message: err.message });
-    });
+    .then((items) => res.json(items))
+    .catch((err) =>
+      res.status(SERVER_ERROR_CODE).json({ message: err.message }),
+    );
 };
 
 exports.createClothingItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
-    .then((item) => {
-      res.status(201).json(item);
-    })
+    .then((item) => res.status(201).json(item))
     .catch((err) => {
       if (err.name === "ValidationError")
         return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
@@ -36,9 +31,7 @@ exports.createClothingItem = (req, res) => {
 exports.deleteClothingItem = (req, res) => {
   ClothingItem.findByIdAndDelete(req.params.itemId)
     .orFail()
-    .then((item) => {
-      res.json(item);
-    })
+    .then((item) => res.json(item))
     .catch((err) => {
       if (err.name === "CastError")
         return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
@@ -58,15 +51,13 @@ exports.likeClothingItem = (req, res) => {
       .send({ message: "This item doesn't exist" });
   }
 
-  ClothingItem.findByIdAndUpdate(
-    req.params.itemId,
+  return ClothingItem.findByIdAndUpdate(
+    itemId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
     .orFail()
-    .then((item) => {
-      res.json(item);
-    })
+    .then((item) => res.json(item))
     .catch((err) => {
       if (err.name === "CastError")
         return res
@@ -89,15 +80,14 @@ exports.unlikeClothingItem = (req, res) => {
       .status(VALIDATION_ERROR_CODE)
       .send({ message: "This item doesn't exist" });
   }
-  ClothingItem.findByIdAndUpdate(
-    req.params.itemId,
+
+  return ClothingItem.findByIdAndUpdate(
+    itemId,
     { $pull: { likes: req.user._id } },
     { new: true },
   )
     .orFail()
-    .then((item) => {
-      res.json(item);
-    })
+    .then((item) => res.json(item))
     .catch((err) => {
       if (err.name === "ValidationError")
         return res
