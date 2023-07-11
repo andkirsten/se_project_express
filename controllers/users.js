@@ -13,7 +13,6 @@ exports.getUsers = function (req, res) {
       res.json(users);
     })
     .catch((err) => {
-      console.log("Get Users " + err.name);
       if (err.name === "ValidationError")
         return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
     });
@@ -41,11 +40,9 @@ exports.getUserById = function (req, res) {
     User.findById(userId)
       .orFail()
       .then((user) => {
-        console.log("Get User by ID " + user);
         res.json(user);
       })
       .catch((err) => {
-        console.log("Get User by ID " + err.name);
         if (err.name === "DocumentNotFoundError")
           return res
             .status(NOT_FOUND_ERROR_CODE)
