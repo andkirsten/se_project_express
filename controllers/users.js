@@ -14,11 +14,7 @@ exports.getUsers = (req, res) => {
       res.json(users);
     })
     .catch((err) => {
-      if (err.name === "ValidationError")
-        return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
-      return res
-        .status(SERVER_ERROR_CODE)
-        .json({ message: "Internal Server Error" });
+      return res.status(SERVER_ERROR_CODE).json({ message: err.message });
     });
 };
 

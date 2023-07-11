@@ -14,17 +14,13 @@ exports.getClothingItems = (req, res) => {
       res.json(items);
     })
     .catch((err) => {
-      if (err.name === "ValidationError")
-        return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
-      return res
-        .status(SERVER_ERROR_CODE)
-        .json({ message: "Internal Server Error" });
+      return res.status(SERVER_ERROR_CODE).json({ message: err.message });
     });
 };
 
 exports.createClothingItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
-  ClothingItem.create({ name, weather, imageUrl })
+  ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
       res.status(201).json(item);
     })
@@ -39,11 +35,7 @@ exports.createClothingItem = (req, res) => {
 
 exports.deleteClothingItem = (req, res) => {
   ClothingItem.findByIdAndDelete(req.params.itemId)
-    .orFail(() => {
-      const error = new Error("Item ID not found");
-      error.status = 404;
-      throw error;
-    })
+    .orFail()
     .then((item) => {
       res.json(item);
     })
@@ -51,8 +43,6 @@ exports.deleteClothingItem = (req, res) => {
       if (err.name === "CastError")
         return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
       if (err.name === "DocumentNotFoundError")
-        return res.status(NOT_FOUND_ERROR_CODE).json({ message: err.message });
-      if (err.name === "Error")
         return res.status(NOT_FOUND_ERROR_CODE).json({ message: err.message });
       return res
         .status(SERVER_ERROR_CODE)

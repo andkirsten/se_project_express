@@ -7,10 +7,9 @@ const { PORT = 3001 } = process.env;
 const usersRouter = require("./routes/users");
 
 const clothingItemsRouter = require("./routes/clothingItems");
+const { NOT_FOUND_ERROR_CODE } = require("./utils/errors");
 
 app.use(express.json());
-
-app.get("/", (req, res) => res.send("Hello World!"));
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db", {
@@ -31,6 +30,6 @@ app.use("/users", usersRouter);
 app.use("/items", clothingItemsRouter);
 
 app.use((req, res) => {
-  res.status(404).json({ message: "Not found" });
+  res.status(NOT_FOUND_ERROR_CODE).json({ message: "Not found" });
 });
 app.listen(PORT, () => console.log(`Example app listening on port ${PORT}!`));
