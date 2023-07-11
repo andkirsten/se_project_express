@@ -1,9 +1,11 @@
 const User = require("../models/user");
+
 const {
   VALIDATION_ERROR_CODE,
-  CAST_ERROR_CODE,
-  SERVER_ERROR_CODE,
+  NOT_FOUND_ERROR_CODE,
 } = require("../utils/errors");
+
+const mongoose = require("mongoose");
 
 exports.getUsers = function (req, res) {
   User.find({})
@@ -31,19 +33,23 @@ exports.createUser = function (req, res) {
 
 exports.getUserById = function (req, res) {
   const userId = req.params.userId;
-  if (!mongoose.ObjectId.isValid(userId)) {
+  if (!mongoose.isValidObjectId(userId)) {
+    return res
+      .status(VALIDATION_ERROR_CODE)
+      .send({ message: "This User doesn't exist" });
+  } else {
     User.findById(userId)
-      // .orFail(() => {
-      //   const error = new Error("User ID not found");
-      //   error.status = 404;
-      //   throw error;
-      // })
+      .orFail()
       .then((user) => {
+        console.log("Get User by ID " + user);
         res.json(user);
       })
       .catch((err) => {
-        if (err.name === "CastError")
-          return res.status(CAST_ERROR_CODE).json({ message: err.message });
+        console.log("Get User by ID " + err.name);
+        if (err.name === "DocumentNotFoundError")
+          return res
+            .status(NOT_FOUND_ERROR_CODE)
+            .json({ message: err.message });
       });
   }
 };
