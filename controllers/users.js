@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const User = require("../models/user");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const { JWT_SECRET } = require("../utils/config");
 
 const {
@@ -26,7 +26,7 @@ exports.createUser = (req, res) => {
         .json({ message: "Internal Server Error" });
     }
     User.create({ name, avatar, email, password: hash })
-      .then((user) => res.status(201).json(user))
+      .then((user) => res.json(user))
       .catch((err) => {
         if (err.name === "ValidationError")
           return res

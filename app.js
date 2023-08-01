@@ -1,13 +1,17 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const { login, createUser } = require("./controllers/users");
 
 const app = express();
 const { PORT = 3001 } = process.env;
 const usersRouter = require("./routes/users");
 
 const clothingItemsRouter = require("./routes/clothingItems");
-const { NOT_FOUND_ERROR_CODE } = require("./utils/errors");
+const {
+  NOT_FOUND_ERROR_CODE,
+  VALIDATION_ERROR_CODE,
+} = require("./utils/errors");
 
 app.use(express.json());
 app.use(cors());
@@ -30,7 +34,10 @@ app.use((req, res, next) => {
 app.use("/users", usersRouter);
 app.use("/items", clothingItemsRouter);
 
+app.post("/signin", login);
+app.post("/signup", createUser);
+
 app.use((req, res) => {
-  res.status(NOT_FOUND_ERROR_CODE).json({ message: "Not found" });
+  res.status(NOT_FOUND_ERROR_CODE).json({ message: "Not Found" });
 });
 app.listen(PORT, () => console.log(`Example app listening on port ${PORT}!`));

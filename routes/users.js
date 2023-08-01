@@ -3,9 +3,9 @@ const {
   createUser,
   login,
   getUsers,
-  getItems,
   getCurrentUser,
 } = require("../controllers/users.js");
+const { getItems } = require("../controllers/clothingItems.js");
 const authMiddleware = require("../middlewares/auth.js");
 
 const router = express.Router();
@@ -19,4 +19,4 @@ router.use(authMiddleware);
 router.get("/users", getUsers);
 router.get("/users/:userId", getCurrentUser);
 
-export default router;
+module.exports = router;

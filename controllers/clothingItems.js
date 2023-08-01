@@ -7,7 +7,7 @@ const {
   SERVER_ERROR_CODE,
 } = require("../utils/errors");
 
-exports.getClothingItems = (req, res) => {
+exports.getItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => res.json(items))
     .catch((err) =>
