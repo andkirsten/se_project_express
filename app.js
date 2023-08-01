@@ -1,5 +1,5 @@
 const express = require("express");
-
+const cors = require("cors");
 const mongoose = require("mongoose");
 
 const app = express();
@@ -10,6 +10,7 @@ const clothingItemsRouter = require("./routes/clothingItems");
 const { NOT_FOUND_ERROR_CODE } = require("./utils/errors");
 
 app.use(express.json());
+app.use(cors());
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db", {

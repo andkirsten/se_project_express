@@ -29,6 +29,11 @@ exports.createClothingItem = (req, res) => {
 };
 
 exports.deleteClothingItem = (req, res) => {
+  if (req.user._id !== req.params.userId) {
+    return res
+      .status(VALIDATION_ERROR_CODE)
+      .json({ message: "You are not allowed to delete this item" });
+  }
   ClothingItem.findByIdAndDelete(req.params.itemId)
     .orFail()
     .then((item) => res.json(item))
