@@ -1,17 +1,14 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const { login, createUser } = require("./controllers/users");
+const { login, createUser, getCurrentUser } = require("./controllers/users");
 
 const app = express();
 const { PORT = 3001 } = process.env;
 const usersRouter = require("./routes/users");
 
 const clothingItemsRouter = require("./routes/clothingItems");
-const {
-  NOT_FOUND_ERROR_CODE,
-  VALIDATION_ERROR_CODE,
-} = require("./utils/errors");
+const { NOT_FOUND_ERROR_CODE } = require("./utils/errors");
 
 app.use(express.json());
 app.use(cors());
@@ -24,20 +21,15 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.log(err));
 
+app.post("/signin", login);
+app.post("/signup", createUser);
+
 app.use((req, res, next) => {
-  req.user = {
-    _id: "64ab9f31c4e7777adb068f2f",
-  };
-  next();
+  res.status(NOT_FOUND_ERROR_CODE).json({ message: "Not found" });
 });
 
 app.use("/users", usersRouter);
 app.use("/items", clothingItemsRouter);
+app.get("/users/me", getCurrentUser);
 
-app.post("/signin", login);
-app.post("/signup", createUser);
-
-app.use((req, res) => {
-  res.status(NOT_FOUND_ERROR_CODE).json({ message: "Not Found" });
-});
 app.listen(PORT, () => console.log(`Example app listening on port ${PORT}!`));

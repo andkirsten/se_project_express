@@ -1,11 +1,12 @@
-const mongoose = require("mongoose");
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const { JWT_SECRET } = require("../utils/config");
+const jwt = require("jsonwebtoken");
 
 const {
   VALIDATION_ERROR_CODE,
   NOT_FOUND_ERROR_CODE,
+  ASSERTION_ERROR_CODE,
   SERVER_ERROR_CODE,
 } = require("../utils/errors");
 
@@ -19,6 +20,13 @@ exports.getUsers = (req, res) => {
 
 exports.createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
+  User.findOne({ email }).then((user) => {
+    if (user) {
+      return res
+        .status(ASSERTION_ERROR_CODE)
+        .json({ message: "This email already exists" });
+    }
+  });
   bcrypt.hash(password, 10, (err, hash) => {
     if (err) {
       return res
@@ -26,7 +34,7 @@ exports.createUser = (req, res) => {
         .json({ message: "Internal Server Error" });
     }
     User.create({ name, avatar, email, password: hash })
-      .then((user) => res.json(user))
+      .then((user) => res.status(201).json(user))
       .catch((err) => {
         if (err.name === "ValidationError")
           return res
@@ -43,46 +51,65 @@ exports.createUser = (req, res) => {
   });
 };
 
-exports.getUserById = (req, res) => {
-  const { userId } = req.params;
-  if (!mongoose.isValidObjectId(userId)) {
-    return res
-      .status(VALIDATION_ERROR_CODE)
-      .json({ message: "This User doesn't exist" });
-  }
-  return User.findById(userId)
-    .orFail()
-    .then((user) => res.json(user))
-    .catch((err) => {
-      if (err.name === "DocumentNotFoundError")
-        return res.status(NOT_FOUND_ERROR_CODE).json({ message: err.message });
-      return res
-        .status(SERVER_ERROR_CODE)
-        .json({ message: "Internal Server Error" });
-    });
-};
+// exports.getUserById = (req, res) => {
+//   const { userId } = req.params;
+//   if (!mongoose.isValidObjectId(userId)) {
+//     return res
+//       .status(VALIDATION_ERROR_CODE)
+//       .json({ message: "This User doesn't exist" });
+//   }
+//   return User.findById(userId)
+//     .orFail()
+//     .then((user) => res.json(user))
+//     .catch((err) => {
+//       if (err.name === "DocumentNotFoundError")
+//         return res.status(NOT_FOUND_ERROR_CODE).json({ message: err.message });
+//       return res
+//         .status(SERVER_ERROR_CODE)
+//         .json({ message: "Internal Server Error" });
+//     });
+// };
 
-exports.login = (req, res) => {
-  User.findUserByCredentials(req.body.email, req.body.password)
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  User.findOne({ email })
     .select("+password")
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-        expiresIn: "7d",
+      if (!user) {
+        return res.status(401).json({ message: "Incorrect email or password" });
+      }
+      bcrypt.compare(password, user.password, (err, isValid) => {
+        if (err) {
+          return res.status(401).json({ message: "Internal Server Error" });
+        }
+        if (!isValid) {
+          return res
+            .status(ASSERTION_ERROR_CODE)
+            .json({ message: "Incorrect email or password" });
+        }
+        const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+          expiresIn: "7d",
+        });
+        return res.json({ token });
       });
-      res.send({ token });
     })
-    .catch((err) => {
-      res.status(401).send({ message: err.message });
-    });
+    .catch((err) =>
+      res.status(SERVER_ERROR_CODE).json({ message: err.message }),
+    );
 };
 
 exports.getCurrentUser = (req, res) => {
   User.findById(req.user._id)
     .orFail()
     .then((user) => res.json(user))
-    .catch((err) =>
-      res.status(SERVER_ERROR_CODE).json({ message: err.message }),
-    );
+    .catch((err) => {
+      console.log(err);
+      if (err.name === "DocumentNotFoundError")
+        return res.status(NOT_FOUND_ERROR_CODE).json({ message: err.message });
+      return res
+        .status(SERVER_ERROR_CODE)
+        .json({ message: "Internal Server Error" });
+    });
 };
 
 exports.updateUser = (req, res) => {
