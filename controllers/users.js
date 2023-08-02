@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 
 const {
   VALIDATION_ERROR_CODE,
+  AUTHENTICATION_ERROR_CODE,
   NOT_FOUND_ERROR_CODE,
   ASSERTION_ERROR_CODE,
   SERVER_ERROR_CODE,
@@ -51,59 +52,29 @@ exports.createUser = (req, res) => {
   });
 };
 
-// exports.getUserById = (req, res) => {
-//   const { userId } = req.params;
-//   if (!mongoose.isValidObjectId(userId)) {
-//     return res
-//       .status(VALIDATION_ERROR_CODE)
-//       .json({ message: "This User doesn't exist" });
-//   }
-//   return User.findById(userId)
-//     .orFail()
-//     .then((user) => res.json(user))
-//     .catch((err) => {
-//       if (err.name === "DocumentNotFoundError")
-//         return res.status(NOT_FOUND_ERROR_CODE).json({ message: err.message });
-//       return res
-//         .status(SERVER_ERROR_CODE)
-//         .json({ message: "Internal Server Error" });
-//     });
-// };
-
 module.exports.login = (req, res) => {
   const { email, password } = req.body;
-  User.findOne({ email })
-    .select("+password")
+  User.findUserByCredentials(email, password)
     .then((user) => {
-      if (!user) {
-        return res.status(401).json({ message: "Incorrect email or password" });
-      }
-      bcrypt.compare(password, user.password, (err, isValid) => {
-        if (err) {
-          return res.status(401).json({ message: "Internal Server Error" });
-        }
-        if (!isValid) {
-          return res
-            .status(ASSERTION_ERROR_CODE)
-            .json({ message: "Incorrect email or password" });
-        }
-        const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-          expiresIn: "7d",
-        });
-        return res.json({ token });
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+        expiresIn: "7d",
       });
+      res.status(200).send({ token });
     })
-    .catch((err) =>
-      res.status(SERVER_ERROR_CODE).json({ message: err.message }),
-    );
+    .catch((err) => {
+      console.log(err);
+      res.status(AUTHENTICATION_ERROR_CODE).send({ message: err.message });
+    });
 };
 
 exports.getCurrentUser = (req, res) => {
+  console.log(req.user);
   User.findById(req.user._id)
-    .orFail()
     .then((user) => res.json(user))
     .catch((err) => {
       console.log(err);
+      if (err.name === "CastError")
+        return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
       if (err.name === "DocumentNotFoundError")
         return res.status(NOT_FOUND_ERROR_CODE).json({ message: err.message });
       return res

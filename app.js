@@ -1,12 +1,11 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const { login, createUser, getCurrentUser } = require("./controllers/users");
+const { login, createUser } = require("./controllers/users");
 
 const app = express();
 const { PORT = 3001 } = process.env;
 const usersRouter = require("./routes/users");
-
 const clothingItemsRouter = require("./routes/clothingItems");
 const { NOT_FOUND_ERROR_CODE } = require("./utils/errors");
 
@@ -24,12 +23,12 @@ mongoose
 app.post("/signin", login);
 app.post("/signup", createUser);
 
-app.use((req, res, next) => {
-  res.status(NOT_FOUND_ERROR_CODE).json({ message: "Not found" });
-});
-
-app.use("/users", usersRouter);
 app.use("/items", clothingItemsRouter);
-app.get("/users/me", getCurrentUser);
+
+app.use((req, res, next) => {
+  res
+    .status(NOT_FOUND_ERROR_CODE)
+    .json({ message: "Requested resource not found" });
+});
 
 app.listen(PORT, () => console.log(`Example app listening on port ${PORT}!`));
