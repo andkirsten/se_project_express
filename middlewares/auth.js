@@ -1,18 +1,24 @@
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config.js");
+const { AUTHENTICATION_ERROR_CODE } = require("../utils/errors.js");
 
 const authMiddleware = (req, res, next) => {
-  const token = req.headers.authorization?.replace("Bearer ", "");
-  if (!token) {
+  const { authorization } = req.headers;
+  if (!authorization || !authorization.startsWith("Bearer ")) {
     return res.status(401).json({ message: "Unauthorized: Missing token" });
   }
+  const token = authorization.replace("Bearer ", "");
+  let payload;
   try {
-    const payload = jwt.verify(token, JWT_SECRET);
-    req.user = payload;
-    next();
+    payload = jwt.verify(token, JWT_SECRET);
   } catch (err) {
-    return res.status(401).json({ message: "Unauthorized: Invalid token" });
+    console.log(err);
+    return res
+      .status(AUTHENTICATION_ERROR_CODE)
+      .json({ message: "Unauthorized: Invalid token" });
   }
+  req.user = payload;
+  return next();
 };
 
-module.exports = { authMiddleware };
+module.exports = authMiddleware;

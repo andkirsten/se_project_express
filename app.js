@@ -2,15 +2,11 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const { login, createUser } = require("./controllers/users");
-
 const app = express();
 const { PORT = 3001 } = process.env;
 const usersRouter = require("./routes/users");
 const clothingItemsRouter = require("./routes/clothingItems");
 const { NOT_FOUND_ERROR_CODE } = require("./utils/errors");
-
-app.use(express.json());
-app.use(cors());
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db", {
@@ -20,12 +16,15 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.log(err));
 
+app.use(express.json());
+app.use(cors());
+app.use("/items", clothingItemsRouter);
+app.use("/users", usersRouter);
+
 app.post("/signin", login);
 app.post("/signup", createUser);
 
-app.use("/items", clothingItemsRouter);
-
-app.use((req, res, next) => {
+app.use((req, res) => {
   res
     .status(NOT_FOUND_ERROR_CODE)
     .json({ message: "Requested resource not found" });
