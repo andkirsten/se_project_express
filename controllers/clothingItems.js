@@ -14,7 +14,9 @@ exports.getItems = (req, res) => {
     .catch(
       (err) =>
         console.error("Get Items: " + err) ||
-        res.status(SERVER_ERROR_CODE).json({ message: err.message }),
+        res
+          .status(SERVER_ERROR_CODE)
+          .json({ message: "An error has occurred on the server" }),
     );
 };
 
@@ -28,36 +30,45 @@ exports.createClothingItem = (req, res) => {
         return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
       return res
         .status(SERVER_ERROR_CODE)
-        .json({ message: "Internal Server Error" });
+        .json({ message: "An error has occurred on the server" });
     });
 };
 
 exports.deleteClothingItem = (req, res) => {
   const { itemId } = req.params;
-  if (!itemId) {
-    throw new Error("This item doesn't exist");
-  }
-  if (req.user._id !== clothingItem.owner) {
-    console.log(req.user._id);
-    console.log(clothingItem.owner);
-    throw new Error("You are not allowed to delete this item");
-  }
-  ClothingItem.findByIdAndDelete(itemId)
-    .then((item) => res.json(item))
-    .catch((err) => {
-      console.error("Delete Item: " + err);
-      if (err.message === "This item doesn't exist")
-        return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
-      if (err.message === "You are not allowed to delete this item")
-        return res.status(403).json({ message: err.message });
-      if (err.name === "CastError")
-        return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
-      if (err.name === "DocumentNotFoundError")
-        return res.status(NOT_FOUND_ERROR_CODE).json({ message: err.message });
-      return res
-        .status(SERVER_ERROR_CODE)
-        .json({ message: "Internal Server Error" });
-    });
+  clothingItem.findById(itemId).then((item) => {
+    if (!item) {
+      throw new Error("This item doesn't exist");
+    }
+    if (req.user._id !== item.owner) {
+      throw new Error("You are not allowed to delete this item");
+    }
+    clothingItem
+      .deleteOne({ _id: itemId })
+      .then(() => {
+        "Item deleted successfully";
+      })
+      .catch((err) => {
+        console.error("Delete Item: " + err);
+        if (err.message === "This item doesn't exist")
+          return res
+            .status(VALIDATION_ERROR_CODE)
+            .json({ message: err.message });
+        if (err.message === "You are not allowed to delete this item")
+          return res.status(403).json({ message: err.message });
+        if (err.name === "CastError")
+          return res
+            .status(VALIDATION_ERROR_CODE)
+            .json({ message: err.message });
+        if (err.name === "DocumentNotFoundError")
+          return res
+            .status(NOT_FOUND_ERROR_CODE)
+            .json({ message: "Document Not Found" });
+        return res
+          .status(SERVER_ERROR_CODE)
+          .json({ message: "An error has occurred on the server" });
+      });
+  });
 };
 
 exports.likeClothingItem = (req, res) => {
@@ -87,7 +98,7 @@ exports.likeClothingItem = (req, res) => {
           .json({ message: "document not found" });
       return res
         .status(SERVER_ERROR_CODE)
-        .json({ message: "Internal Server Error" });
+        .json({ message: "An error has occurred on the server" });
     });
 };
 

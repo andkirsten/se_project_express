@@ -1,12 +1,16 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const helmet = require("helmet");
 const { login, createUser } = require("./controllers/users");
-const app = express();
-const { PORT = 3001 } = process.env;
 const usersRouter = require("./routes/users");
 const clothingItemsRouter = require("./routes/clothingItems");
 const { NOT_FOUND_ERROR_CODE } = require("./utils/errors");
+
+const app = express();
+const { PORT = 3001 } = process.env;
+
+app.use(helmet());
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db", {

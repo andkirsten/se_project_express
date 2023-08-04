@@ -5,6 +5,6 @@ const generateJWTSecret = () => {
   return crypto.randomBytes(byteLength).toString("hex");
 };
 
-JWT_SECRET = generateJWTSecret();
+const JWT_SECRET = generateJWTSecret();
 
 module.exports = { JWT_SECRET };

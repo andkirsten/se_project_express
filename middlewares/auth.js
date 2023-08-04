@@ -1,11 +1,13 @@
 const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = require("../utils/config.js");
-const { AUTHENTICATION_ERROR_CODE } = require("../utils/errors.js");
+const { JWT_SECRET } = require("../utils/config");
+const { AUTHENTICATION_ERROR_CODE } = require("../utils/errors");
 
 const authMiddleware = (req, res, next) => {
   const { authorization } = req.headers;
   if (!authorization || !authorization.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Unauthorized: Missing token" });
+    return res
+      .status(AUTHENTICATION_ERROR_CODE)
+      .json({ message: "Unauthorized: Missing token" });
   }
   const token = authorization.replace("Bearer ", "");
   let payload;
