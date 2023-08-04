@@ -12,7 +12,7 @@ const authMiddleware = (req, res, next) => {
   try {
     payload = jwt.verify(token, JWT_SECRET);
   } catch (err) {
-    console.log(err);
+    console.error("Auth Middleware: " + err);
     return res
       .status(AUTHENTICATION_ERROR_CODE)
       .json({ message: "Unauthorized: Invalid token" });
