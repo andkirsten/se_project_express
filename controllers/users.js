@@ -19,9 +19,6 @@ exports.createUser = (req, res) => {
     .then((hash) => User.create({ name, avatar, email, password: hash }))
     .then((user) => res.send({ name, avatar, email, _id: user._id }))
     .catch((err) => {
-      console.error("Create User: " + err);
-      if (err.message === "This email already exists")
-        return res.status(ASSERTION_ERROR_CODE).json({ message: err.message });
       if (err.name === "ValidationError")
         return res
           .status(VALIDATION_ERROR_CODE)
@@ -61,7 +58,6 @@ exports.getCurrentUser = (req, res) => {
     .orFail()
     .then((user) => res.json(user))
     .catch((err) => {
-      console.error("Get Current User: " + err);
       if (err.name === "CastError")
         return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
       if (err.name === "DocumentNotFoundError")
@@ -82,13 +78,11 @@ exports.updateUser = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     { name, avatar },
-    { new: true },
-    { runValidators: true },
+    { new: true, runValidators: true },
   )
     .orFail()
     .then((user) => res.json(user))
     .catch((err) => {
-      console.error("Update User: " + err);
       if (err.name === "ValidationError")
         return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
       if (err.name === "DocumentNotFoundError")

@@ -6,11 +6,13 @@ const { login, createUser } = require("./controllers/users");
 const usersRouter = require("./routes/users");
 const clothingItemsRouter = require("./routes/clothingItems");
 const { NOT_FOUND_ERROR_CODE } = require("./utils/errors");
+const { requestLogger, errorLogger } = require("./middlewares/logger");
 
 const app = express();
 const { PORT = 3001 } = process.env;
 
 app.use(helmet());
+app.use(requestLogger);
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db", {
@@ -33,5 +35,7 @@ app.use((req, res) => {
     .status(NOT_FOUND_ERROR_CODE)
     .json({ message: "Requested resource not found" });
 });
+
+app.use(errorLogger);
 
 app.listen(PORT, () => console.log(`Example app listening on port ${PORT}!`));

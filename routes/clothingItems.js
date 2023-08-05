@@ -1,7 +1,8 @@
 const express = require("express");
 const auth = require("../middlewares/auth");
-const router = express.Router();
 const clothingItemsController = require("../controllers/clothingItems");
+
+const router = express.Router();
 
 router.get("/", clothingItemsController.getItems);
 router.post("/", auth, clothingItemsController.createClothingItem);
