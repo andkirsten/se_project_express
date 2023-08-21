@@ -8,6 +8,7 @@ const {
   FORBIDDEN_ERROR_CODE,
 } = require("../utils/errors");
 const clothingItem = require("../models/clothingItem");
+const { errorLogger } = require("../middlewares/logger");
 
 exports.getItems = (req, res) => {
   ClothingItem.find({})
@@ -18,10 +19,12 @@ exports.getItems = (req, res) => {
 };
 
 exports.createClothingItem = (req, res) => {
+  console.log(req.body);
   const { name, weather, imageUrl } = req.body;
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => res.status(201).json(item))
     .catch((err) => {
+      errorLogger(err);
       if (err.name === "ValidationError")
         return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
       return res
@@ -46,6 +49,7 @@ exports.deleteClothingItem = (req, res) => {
         .then(() => res.send({ message: "Item deleted successfully" }));
     })
     .catch((err) => {
+      errorLogger(err);
       if (err.message === "This item doesn't exist")
         return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
       if (err.message === "You are not allowed to delete this item")
@@ -77,6 +81,7 @@ exports.likeClothingItem = (req, res) => {
     .orFail()
     .then((item) => res.json(item))
     .catch((err) => {
+      errorLogger(err);
       if (err.name === "CastError")
         return res
           .status(VALIDATION_ERROR_CODE)
@@ -106,6 +111,7 @@ exports.unlikeClothingItem = (req, res) => {
     .orFail()
     .then((item) => res.json(item))
     .catch((err) => {
+      errorLogger(err);
       if (err.name === "ValidationError")
         return res
           .status(VALIDATION_ERROR_CODE)
