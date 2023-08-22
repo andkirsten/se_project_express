@@ -49,7 +49,6 @@ exports.deleteClothingItem = (req, res) => {
         .then(() => res.send({ message: "Item deleted successfully" }));
     })
     .catch((err) => {
-      errorLogger(err);
       if (err.message === "This item doesn't exist")
         return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
       if (err.message === "You are not allowed to delete this item")
@@ -111,17 +110,6 @@ exports.unlikeClothingItem = (req, res) => {
     .orFail()
     .then((item) => res.json(item))
     .catch((err) => {
-      errorLogger(err);
-      if (err.name === "ValidationError")
-        return res
-          .status(VALIDATION_ERROR_CODE)
-          .json({ message: "validation error" });
-      if (err.name === "DocumentNotFoundError")
-        return res
-          .status(NOT_FOUND_ERROR_CODE)
-          .json({ message: "document not found" });
-      return res
-        .status(SERVER_ERROR_CODE)
-        .json({ message: "Internal Server Error" });
+      next(err);
     });
 };

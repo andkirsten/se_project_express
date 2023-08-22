@@ -4,8 +4,12 @@ const requestLogger = (req, res, next) => {
 };
 
 const errorLogger = (err, req, res, next) => {
-  console.error(err);
-  next(err);
+  console.error(err.stack);
+  const { statusCode = 500, message } = err;
+  res.status(statusCode).send({
+    message: statusCode === 500 ? "An error occurred on the server" : message,
+  });
+  next();
 };
 
 module.exports = { requestLogger, errorLogger };

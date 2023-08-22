@@ -13,7 +13,7 @@ exports.createUser = (req, res) => {
     .then((hash) => User.create({ name, avatar, email, password: hash }))
     .then((user) => res.send({ name, avatar, email, _id: user._id }))
     .catch((err) => {
-      errorLogger(err);
+      console.error(err);
     });
 };
 
@@ -27,7 +27,9 @@ exports.login = (req, res) => {
       res.send({ token });
     })
     .catch((err) => {
-      errorLogger(err);
+      if (err.name === "Error") {
+        return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
+      }
     });
 };
 
@@ -36,7 +38,7 @@ exports.getCurrentUser = (req, res) => {
     .orFail()
     .then((user) => res.json(user))
     .catch((err) => {
-      errorLogger(err);
+      console.error(err);
     });
 };
 
@@ -55,7 +57,7 @@ exports.updateUser = (req, res) => {
     .orFail()
     .then((user) => res.json(user))
     .catch((err) => {
-      errorLogger(err);
+      console.error(err);
     });
   return null;
 };
