@@ -66,15 +66,18 @@ exports.deleteClothingItem = (req, res) => {
 };
 exports.likeClothingItem = (req, res) => {
   const { itemId } = req.params;
+  const { _id: userId } = req.user;
   if (!mongoose.isValidObjectId(itemId)) {
     return res
       .status(VALIDATION_ERROR_CODE)
       .send({ message: "This item doesn't exist" });
   }
 
+  console.log(userId);
+
   return ClothingItem.findByIdAndUpdate(
     itemId,
-    { $addToSet: { likes: req.user._id } },
+    { $addToSet: { likes: userId } },
     { new: true },
   )
     .orFail()
@@ -97,6 +100,7 @@ exports.likeClothingItem = (req, res) => {
 
 exports.unlikeClothingItem = (req, res) => {
   const { itemId } = req.params;
+  const { _id: userId } = req.user;
   if (!mongoose.isValidObjectId(itemId)) {
     return res
       .status(VALIDATION_ERROR_CODE)
@@ -104,7 +108,7 @@ exports.unlikeClothingItem = (req, res) => {
   }
   return ClothingItem.findByIdAndUpdate(
     itemId,
-    { $pull: { likes: req.user._id } },
+    { $pull: { likes: userId } },
     { new: true },
   )
     .orFail()
