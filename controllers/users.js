@@ -2,7 +2,13 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
-const { errorLogger } = require("../middlewares/logger");
+const {
+  UnauthorizedError,
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+  ConflictError,
+} = require("../utils/errors");
 
 const { VALIDATION_ERROR_CODE } = require("../utils/errors");
 
@@ -13,7 +19,8 @@ exports.createUser = (req, res) => {
     .then((hash) => User.create({ name, avatar, email, password: hash }))
     .then((user) => res.send({ name, avatar, email, _id: user._id }))
     .catch((err) => {
-      console.error(err);
+      next(new BadRequestError("Invalid data"));
+      next(new ConflictError("This user already exists"));
     });
 };
 
@@ -27,9 +34,9 @@ exports.login = (req, res) => {
       res.send({ token });
     })
     .catch((err) => {
-      if (err.name === "Error") {
-        return res.status(VALIDATION_ERROR_CODE).json({ message: err.message });
-      }
+      next(new UnauthorizedError("Incorrect email or password"));
+      next(new BadRequestError("Invalid data"));
+      next(new ConflictError("This user already exists"));
     });
 };
 
@@ -38,7 +45,7 @@ exports.getCurrentUser = (req, res) => {
     .orFail()
     .then((user) => res.json(user))
     .catch((err) => {
-      console.error(err);
+      next(new NotFoundError("This user doesn't exist"));
     });
 };
 
@@ -57,7 +64,11 @@ exports.updateUser = (req, res) => {
     .orFail()
     .then((user) => res.json(user))
     .catch((err) => {
-      console.error(err);
+      next(new NotFoundError("This user doesn't exist"));
+      next(new BadRequestError("Invalid data"));
+      next(new ConflictError("This user already exists"));
+      next(new ForbiddenError("You are not allowed to update this user"));
+      next(new UnauthorizedError("You are not authorized"));
     });
   return null;
 };

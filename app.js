@@ -7,6 +7,8 @@ const usersRouter = require("./routes/users");
 const clothingItemsRouter = require("./routes/clothingItems");
 const { NOT_FOUND_ERROR_CODE } = require("./utils/errors");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
+const { errorHandler } = require("./middlewares/errors");
+const { errors } = require("celebrate");
 
 const app = express();
 const { PORT = 3001 } = process.env;
@@ -37,5 +39,7 @@ app.use((req, res) => {
 });
 
 app.use(errorLogger);
+app.use(errors());
+app.use(errorHandler);
 
 app.listen(PORT, () => console.log(`Example app listening on port ${PORT}!`));
