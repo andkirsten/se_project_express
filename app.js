@@ -11,7 +11,7 @@ const { errorHandler } = require("./middlewares/errors");
 const { errors } = require("celebrate");
 
 const app = express();
-const { PORT = 3001 } = process.env;
+const { PORT = 3000 } = process.env;
 
 app.use(helmet());
 app.use(requestLogger);
