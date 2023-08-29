@@ -1,22 +1,18 @@
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config");
-const { AUTHENTICATION_ERROR_CODE } = require("../utils/errors");
+const UnauthorizedError = require("../utils/errors/UnauthorizedError");
 
 const authMiddleware = (req, res, next) => {
   const { authorization } = req.headers;
   if (!authorization || !authorization.startsWith("Bearer ")) {
-    return res
-      .status(AUTHENTICATION_ERROR_CODE)
-      .json({ message: "Unauthorized: Missing token" });
+    next(new UnauthorizedError("You are not authorized"));
   }
   const token = authorization.replace("Bearer ", "");
   let payload;
   try {
     payload = jwt.verify(token, JWT_SECRET);
   } catch (err) {
-    return res
-      .status(AUTHENTICATION_ERROR_CODE)
-      .json({ message: "Unauthorized: Invalid token" });
+    next(new UnauthorizedError("You are not authorized"));
   }
   req.user = payload;
   return next();
