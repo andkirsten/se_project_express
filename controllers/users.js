@@ -34,14 +34,8 @@ exports.login = (req, res, next) => {
       res.send({ token });
     })
     .catch((err) => {
-      if (err.name === "ValidationError") {
-        next(new BadRequestError("Invalid data"));
-      }
       if (err.name === "Error") {
         next(new UnauthorizedError("You are not authorized"));
-      }
-      if (err.name === "CastError") {
-        next(new NotFoundError("This user doesn't exist"));
       }
       next(err);
     });
@@ -49,11 +43,11 @@ exports.login = (req, res, next) => {
 
 exports.getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
-    .orFail()
+    .orFail(() => new NotFoundError("This user doesn't exist"))
     .then((user) => res.json(user))
     .catch((err) => {
       if (err.name === "CastError") {
-        next(new NotFoundError("This user doesn't exist"));
+        next(new BadRequestError("Invalid data"));
       }
       next(err);
     });
@@ -69,14 +63,11 @@ exports.updateUser = (req, res, next) => {
     { name, avatar },
     { new: true, runValidators: true },
   )
-    .orFail()
+    .orFail(() => new NotFoundError("This user doesn't exist"))
     .then((user) => res.json(user))
     .catch((err) => {
-      if (err.name === "ValidationError") {
-        next(new BadRequestError("Invalid data"));
-      }
       if (err.name === "CastError") {
-        next(new NotFoundError("This user doesn't exist"));
+        next(new BadRequestError("Invalid data"));
       }
       next(err);
     });
