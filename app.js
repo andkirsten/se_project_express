@@ -8,7 +8,7 @@ const { login, createUser } = require("./controllers/users");
 const usersRouter = require("./routes/users");
 const clothingItemsRouter = require("./routes/clothingItems");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
-const { NotFoundError } = require("./utils/errors/NotFoundError");
+const NotFoundError = require("./utils/errors/NotFoundError");
 const { errorHandler } = require("./middlewares/errors");
 
 const {
